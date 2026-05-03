@@ -1,0 +1,40 @@
+HELP.md
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### VS Code ###
+.vscode/
+DB_URL=jdbc:mysql://localhost:3306/pm_db
+DB_USERNAME=root
+DB_PASSWORD=your_secure_password
+MAIL_USERNAME=your_email@gmail.com
+MAIL_PASSWORD=your_app_password
+JWT_SECRET=generate_new_random_secret
+JWT_EXPIRATION_MS=86400000
