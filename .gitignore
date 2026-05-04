@@ -1,10 +1,47 @@
-HELP.md
-target/
+# =========================
+# BACKEND (Spring Boot / Java / Maven)
+# =========================
+**/target/
+**/bin/
+*.class
+*.log
 !.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
+HELP.md
 
-### STS ###
+# =========================
+# FRONTEND (React / Node.js)
+# =========================
+**/node_modules/
+**/build/
+**/dist/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# =========================
+# SECURITY & ENV VARIABLES (Cực kỳ quan trọng)
+# =========================
+# Bỏ qua các file chứa mật khẩu, biến môi trường
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.pem
+
+# =========================
+# IDEs & OS FILES
+# =========================
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# VS Code
+.vscode/
+
+# Eclipse / STS
 .apt_generated
 .classpath
 .factorypath
@@ -13,28 +50,6 @@ target/
 .springBeans
 .sts4-cache
 
-### IntelliJ IDEA ###
-.idea
-*.iws
-*.iml
-*.ipr
-
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
-
-### VS Code ###
-.vscode/
-DB_URL=jdbc:mysql://localhost:3306/pm_db
-DB_USERNAME=root
-DB_PASSWORD=your_secure_password
-MAIL_USERNAME=your_email@gmail.com
-MAIL_PASSWORD=your_app_password
-JWT_SECRET=generate_new_random_secret
-JWT_EXPIRATION_MS=86400000
+# OS/Hệ điều hành
+.DS_Store
+Thumbs.db
