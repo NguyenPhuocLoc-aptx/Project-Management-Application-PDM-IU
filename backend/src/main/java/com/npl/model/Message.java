@@ -1,6 +1,7 @@
 package com.npl.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -29,10 +30,14 @@ public class Message {
     @Column(length = 36)
     private String id;
 
+    @JsonIgnoreProperties({"hibernateLazyInitializer","handler","messages","members","project"})
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "chat_id", nullable = false)
     private Chat chat;
 
+    @JsonIgnoreProperties({"hibernateLazyInitializer","handler","password",
+            "ownedWorkspaces","workspaceMemberships","projectMemberships",
+            "assignedTasks","notifications","profile"})
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sender_id", nullable = false)
     private User sender;

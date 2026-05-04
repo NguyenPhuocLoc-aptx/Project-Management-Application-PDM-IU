@@ -18,7 +18,7 @@ import lombok.RequiredArgsConstructor; // ADDED THIS
 
 @RestController
 @RequestMapping("/api/messages")
-@RequiredArgsConstructor // FIXED: This replaces @Autowired and handles constructor injection automatically!
+@RequiredArgsConstructor
 public class MessageController {
 
     // FIXED: Made these 'private final' so @RequiredArgsConstructor can inject them
@@ -31,10 +31,9 @@ public class MessageController {
             @RequestHeader("Authorization") String jwt) throws UserException, ChatException, ProjectException {
 
         User user = userService.findUserProfileByJwt(jwt);
-
+        // Pass request.getChatId() as the projectId since the service resolves chat from project
         Message sentMessage = messageService.sendMessage(
                 user.getId(), request.getChatId(), request.getContent());
-
         return ResponseEntity.ok(sentMessage);
     }
 

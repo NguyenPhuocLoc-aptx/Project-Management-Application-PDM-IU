@@ -115,11 +115,9 @@ public class TaskServiceImpl implements TaskService {
 	}
 
 	@Override
-	public List<Task> getIssuesByAssigneeId(String assigneeId) throws TaskException {
+	public List<Task> getIssuesByAssigneeId(String assigneeId) {
 		List<Task> tasks = taskRepository.findAllByAssigneeId(assigneeId);
-		if (tasks == null || tasks.isEmpty())
-			throw new TaskException("No tasks found for assignee " + assigneeId);
-		return tasks;
+		return tasks != null ? tasks : List.of();
 	}
 
 	@Override

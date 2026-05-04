@@ -96,4 +96,12 @@ public class TaskController {
         Task updated = taskService.updateStatus(taskId, status);
         return ResponseEntity.ok(updated);
     }
+    @GetMapping("/api/tasks/my-tasks")
+    public ResponseEntity<List<Task>> getMyTasks(
+            @RequestHeader("Authorization") String jwt)
+            throws UserException, TaskException, ProjectException {
+        User user = userService.findUserProfileByJwt(jwt);
+        List<Task> tasks = taskService.getIssuesByAssigneeId(user.getId());
+        return ResponseEntity.ok(tasks);
+    }
 }

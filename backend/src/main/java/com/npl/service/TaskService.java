@@ -24,7 +24,7 @@ public interface TaskService {
 
 	String deleteIssue(String issueId, String userId) throws UserException, TaskException; // ✅
 
-	List<Task> getIssuesByAssigneeId(String assigneeId) throws TaskException;   // ✅
+	List<Task> getIssuesByAssigneeId(String assigneeId);   // ✅
 
 	List<Task> searchIssues(String title, String status, String priority, String assigneeId) // ✅
 			throws TaskException;
