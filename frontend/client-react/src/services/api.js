@@ -92,3 +92,24 @@ export const notificationService = {
     markRead: (id) => api.patch(`/api/notifications/${id}/read`),
     markAllRead: () => api.patch("/api/notifications/read-all"),
 };
+// ── My Tasks (assigned to current user) ────────────────────────────
+export const messageService = {
+    getMyTasks: () => api.get("/api/tasks/assigned-to-me"),
+    getTaskById: (id) => api.get(`/api/tasks/${id}`),
+};
+
+// ── Chat & Messages ────────────────────────────────────────────────
+export const chatService = {
+    getOnlineUsers: () => api.get("/api/chat/users/online"),
+    sendMessage: (data) => api.post("/api/chat/messages", data),
+    getMessages: (userId) => api.get(`/api/chat/messages/${userId}`),
+    getConversations: () => api.get("/api/chat/conversations"),
+    deleteMessage: (id) => api.delete(`/api/chat/messages/${id}`),
+};
+
+// ── Project Messages ──────────────────────────────────────────────────
+export const projectMessagesService = {
+    getByProject: (projectId) => api.get(`/api/messages/chat/${projectId}`),
+    send: (projectId, content) =>
+        api.post("/api/messages/send", { chatId: projectId, content }),
+};
