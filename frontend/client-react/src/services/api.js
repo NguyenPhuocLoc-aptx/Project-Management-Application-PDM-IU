@@ -92,13 +92,13 @@ export const notificationService = {
     markRead: (id) => api.patch(`/api/notifications/${id}/read`),
     markAllRead: () => api.patch("/api/notifications/read-all"),
 };
-// ── My Tasks (assigned to current user) ────────────────────────────
-export const messageService = {
-    getMyTasks: () => api.get("/api/tasks/assigned-to-me"),
-    getTaskById: (id) => api.get(`/api/tasks/${id}`),
+
+// ── My Tasks (assigned to current user) ───────────────────────────────
+export const myTasksService = {
+    getAssigned: () => api.get("/api/tasks/my-tasks"),
 };
 
-// ── Chat & Messages ────────────────────────────────────────────────
+// ── Chat & Messages ────────────────────────────────────────────────────
 export const chatService = {
     getOnlineUsers: () => api.get("/api/chat/users/online"),
     sendMessage: (data) => api.post("/api/chat/messages", data),
@@ -107,8 +107,15 @@ export const chatService = {
     deleteMessage: (id) => api.delete(`/api/chat/messages/${id}`),
 };
 
-// ── Project Messages ──────────────────────────────────────────────────
+// ── Project Messages ───────────────────────────────────────────────────
 export const projectMessagesService = {
+    getByProject: (projectId) => api.get(`/api/messages/chat/${projectId}`),
+    send: (projectId, content) =>
+        api.post("/api/messages/send", { chatId: projectId, content }),
+};
+
+// ── Message Service (used by useChat.js) ──────────────────────────────
+export const messageService = {
     getByProject: (projectId) => api.get(`/api/messages/chat/${projectId}`),
     send: (projectId, content) =>
         api.post("/api/messages/send", { chatId: projectId, content }),

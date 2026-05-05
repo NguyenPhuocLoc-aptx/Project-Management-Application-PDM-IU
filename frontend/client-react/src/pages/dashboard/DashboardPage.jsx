@@ -115,11 +115,11 @@ export default function DashboardPage() {
 
                 {/* Search */}
                 <div className="relative flex-1 min-w-[180px] max-w-xs">
-                    <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg pointer-events-none">
+                    <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg pointer-events-none z-10">
                         search
                     </span>
                     <input
-                        className="input-field pl-10 py-2"
+                        className="input-field !pl-10 py-2 w-full"
                         placeholder="Filter projects…"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}

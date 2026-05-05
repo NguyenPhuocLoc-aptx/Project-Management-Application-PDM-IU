@@ -43,7 +43,7 @@ export default function KanbanColumn({
             {/* Column header */}
             <div className="flex items-center justify-between mb-3 px-1">
                 <div className="flex items-center gap-2.5">
-                    <span className={`w-3 h-3 rounded-full ${cfg.accent}`} />
+                    <span className={`w-3 h-3 rounded-full flex-shrink-0 ${cfg.accent}`} />
                     <h3 className="text-sm font-extrabold text-slate-800 tracking-tight">
                         {cfg.label}
                     </h3>
@@ -55,7 +55,7 @@ export default function KanbanColumn({
                 <button
                     onClick={() => onAddTask(status)}
                     title={`Add task to ${cfg.label}`}
-                    className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-primary transition-colors"
+                    className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-primary transition-colors flex-shrink-0"
                 >
                     <span className="material-symbols-outlined text-lg">add</span>
                 </button>

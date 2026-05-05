@@ -151,8 +151,8 @@ function TaskRow({ task, onStatusChange, onNavigate }) {
             <div className="flex-shrink-0 text-right min-w-[80px] hidden lg:block">
                 {task.dueDate ? (
                     <span className={`text-xs font-semibold ${overdue ? "text-red-500" :
-                            today ? "text-orange-500" :
-                                "text-slate-400"
+                        today ? "text-orange-500" :
+                            "text-slate-400"
                         }`}>
                         {overdue && <span className="material-symbols-outlined text-[11px] mr-0.5">schedule</span>}
                         {today ? "Today" : formatDate(task.dueDate)}
@@ -373,12 +373,12 @@ export default function MyTasksPage() {
             {/* ── Toolbar ── */}
             <div className="flex flex-wrap items-center gap-3">
                 {/* Search */}
-                <div className="relative min-w-[200px] flex-1 max-w-xs">
+                <div className="relative w-full sm:min-w-[200px] sm:max-w-xs flex-1">
                     <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-base pointer-events-none">
                         search
                     </span>
                     <input
-                        className="input-field pl-9 py-2 text-sm"
+                        className="input-field !pl-10 py-2 text-sm w-full"
                         placeholder="Search tasks…"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}

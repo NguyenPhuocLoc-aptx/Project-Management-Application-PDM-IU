@@ -181,14 +181,15 @@ export default function BoardPage() {
             </div>
 
             {/* ── Filter toolbar ── */}
-            <div className="flex flex-wrap items-center gap-2.5 flex-shrink-0 pb-1">
+            <div className="flex items-center gap-2.5 flex-shrink-0 bg-white rounded-2xl px-4 py-3 border border-slate-100 shadow-sm overflow-x-auto">
+
                 {/* Search */}
-                <div className="relative min-w-[180px]">
-                    <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-base pointer-events-none">
+                <div className="relative flex-shrink-0 w-[180px]">
+                    <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-base pointer-events-none z-10">
                         search
                     </span>
                     <input
-                        className="input-field pl-9 py-2 text-sm"
+                        className="input-field !pl-9 py-2 text-sm w-full"
                         placeholder="Search tasks…"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
@@ -197,7 +198,7 @@ export default function BoardPage() {
 
                 {/* Priority filter */}
                 <select
-                    className="input-field w-auto py-2 text-sm cursor-pointer"
+                    className="flex-shrink-0 bg-[#ecf4ff] border-none outline-none rounded-lg px-3 py-2 text-sm font-medium text-slate-700 cursor-pointer focus:ring-2 focus:ring-primary/20"
                     value={filterPriority}
                     onChange={(e) => setFilterPriority(e.target.value)}
                 >
@@ -209,7 +210,7 @@ export default function BoardPage() {
 
                 {/* Assignee filter */}
                 <select
-                    className="input-field w-auto py-2 text-sm cursor-pointer"
+                    className="flex-shrink-0 bg-[#ecf4ff] border-none outline-none rounded-lg px-3 py-2 text-sm font-medium text-slate-700 cursor-pointer focus:ring-2 focus:ring-primary/20"
                     value={filterAssignee}
                     onChange={(e) => setFilterAssignee(e.target.value)}
                 >
@@ -222,14 +223,20 @@ export default function BoardPage() {
                     ))}
                 </select>
 
-                {/* Task count summary */}
-                <div className="flex gap-3 ml-auto flex-wrap">
+                {/* Divider */}
+                <div className="h-5 w-px bg-slate-200 flex-shrink-0 mx-1" />
+
+                {/* Task count dots — pinned to right */}
+                <div className="flex gap-3 ml-auto flex-shrink-0">
                     {COLUMNS.map((col) => (
-                        <span key={col} className="text-xs font-bold text-slate-500 flex items-center gap-1.5">
-                            <span className={`w-2 h-2 rounded-full ${col === "TODO" ? "bg-slate-400" :
-                                col === "IN_PROGRESS" ? "bg-blue-500" :
-                                    col === "IN_REVIEW" ? "bg-orange-400" :
-                                        "bg-green-500"
+                        <span
+                            key={col}
+                            className="text-xs font-bold text-slate-500 flex items-center gap-1.5 whitespace-nowrap"
+                        >
+                            <span className={`w-2 h-2 rounded-full flex-shrink-0 ${col === "TODO" ? "bg-slate-400" :
+                                    col === "IN_PROGRESS" ? "bg-blue-500" :
+                                        col === "IN_REVIEW" ? "bg-orange-400" :
+                                            "bg-green-500"
                                 }`} />
                             {tasksByColumn[col]?.length ?? 0}
                         </span>
@@ -237,17 +244,18 @@ export default function BoardPage() {
                 </div>
             </div>
 
-            {/* ── Kanban columns (horizontal scroll) ── */}
-            <div className="flex gap-4 overflow-x-auto pb-4 flex-1">
+            {/* ── Kanban columns (Fit to screen) ── */}
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 pb-4 flex-1 min-h-0">
                 {COLUMNS.map((col) => (
-                    <KanbanColumn
-                        key={col}
-                        status={col}
-                        tasks={tasksByColumn[col] || []}
-                        onDrop={handleDrop}
-                        onTaskClick={(task) => setSelectedTask(task)}
-                        onAddTask={handleAddTask}
-                    />
+                    <div key={col} className="min-w-0 h-full flex flex-col">
+                        <KanbanColumn
+                            status={col}
+                            tasks={tasksByColumn[col] || []}
+                            onDrop={handleDrop}
+                            onTaskClick={(task) => setSelectedTask(task)}
+                            onAddTask={handleAddTask}
+                        />
+                    </div>
                 ))}
             </div>
 
