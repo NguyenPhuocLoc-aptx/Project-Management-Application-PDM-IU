@@ -11,20 +11,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "chat_members",
-        uniqueConstraints = {
-                @UniqueConstraint(name = "uk_cm_chat_user", columnNames = {"chat_id", "user_id"})
-        },
-        indexes = {
-                @Index(name = "idx_cm_user", columnList = "user_id")
-        }
-)
+@Table(name = "chats")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class Chat {
+
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
