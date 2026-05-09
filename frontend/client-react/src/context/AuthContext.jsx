@@ -1,7 +1,5 @@
-// src/context/AuthContext.jsx
-import { createContext, useContext, useState, useCallback } from "react";
 import { authService } from "../services/api";
-
+import { createContext, useContext, useState, useCallback, useEffect } from "react";
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
@@ -15,7 +13,15 @@ export function AuthProvider({ children }) {
     const [error, setError] = useState(null);
 
     const clearError = useCallback(() => setError(null), []);
-
+    // Listen for forced logout triggered by 401 interceptor
+    useEffect(() => {
+        const handle = () => {
+            setToken(null);
+            setUser(null);
+        };
+        window.addEventListener("auth:logout", handle);
+        return () => window.removeEventListener("auth:logout", handle);
+    }, []);
     // ── signup ────────────────────────────────────────────────────────
     const signup = useCallback(async (fullName, email, password) => {
         setLoading(true);

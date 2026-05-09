@@ -14,10 +14,11 @@ export function useChat(projectId) {
     const [connected, setConnected] = useState(false);
     const [project, setProject] = useState(null);
     const clientRef = useRef(null);
-
-    // ── Fetch project info + message history ─────────────────────────
+    
     useEffect(() => {
         if (!projectId) return;
+        setMessages([]);
+        setProject(null);
         setLoading(true);
         Promise.all([
             messageService.getByProject(projectId),
@@ -30,7 +31,6 @@ export function useChat(projectId) {
             .catch(() => { })
             .finally(() => setLoading(false));
     }, [projectId]);
-
     // ── WebSocket connection ──────────────────────────────────────────
     useEffect(() => {
         if (!projectId || !token) return;

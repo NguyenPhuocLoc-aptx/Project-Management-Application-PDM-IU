@@ -31,9 +31,12 @@ public class MessageController {
             @RequestHeader("Authorization") String jwt) throws UserException, ChatException, ProjectException {
 
         User user = userService.findUserProfileByJwt(jwt);
-        // Pass request.getChatId() as the projectId since the service resolves chat from project
+
+        String projectId = request.getProjectId() != null
+                ? request.getProjectId()
+                : request.getChatId();
         Message sentMessage = messageService.sendMessage(
-                user.getId(), request.getChatId(), request.getContent());
+                user.getId(), projectId, request.getContent());
         return ResponseEntity.ok(sentMessage);
     }
 

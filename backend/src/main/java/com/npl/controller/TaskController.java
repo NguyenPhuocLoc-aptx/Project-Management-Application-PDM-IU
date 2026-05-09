@@ -131,4 +131,17 @@ public class TaskController {
         Task task = taskService.removeLabel(taskId, labelId);
         return ResponseEntity.ok(task);
     }
+
+    @PatchMapping("/api/tasks/{taskId}")
+    public ResponseEntity<Task> patchTask(
+            @PathVariable String taskId,
+            @RequestBody CreateTaskRequest request,
+            @RequestHeader("Authorization") String jwt)
+            throws UserException, TaskException, ProjectException {
+
+        User user = userService.findUserProfileByJwt(jwt);
+        Task updated = taskService.updateIssue(taskId, request, user.getId())
+                .orElseThrow(() -> new TaskException("Task not found: " + taskId));
+        return ResponseEntity.ok(updated);
+    }
 }

@@ -20,16 +20,15 @@ api.interceptors.request.use(
     (error) => Promise.reject(error)
 );
 
-// ── Response interceptor: handle 401 globally ──────────────────────
 api.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error.response?.status === 401) {
-            // Token expired or invalid — clear storage and redirect to login
             localStorage.removeItem("authToken");
             localStorage.removeItem("user");
-            // Use window.location so we break out of React Router without
-            // needing to import useNavigate here
+            // Dispatch a custom event so AuthContext can react
+            // without a direct import cycle
+            window.dispatchEvent(new Event("auth:logout"));
             if (window.location.pathname !== "/auth") {
                 window.location.href = "/auth";
             }
@@ -70,11 +69,12 @@ export const projectService = {
 };
 
 // ── Tasks ─────────────────────────────────────────────────────────────
+
 export const taskService = {
     getByProject: (projectId) => api.get(`/api/projects/${projectId}/tasks`),
     getById: (id) => api.get(`/api/tasks/${id}`),
     create: (projectId, data) => api.post(`/api/projects/${projectId}/tasks`, data),
-    update: (id, data) => api.put(`/api/tasks/${id}`, data),
+    update: (id, data) => api.patch(`/api/tasks/${id}`, data),
     delete: (id) => api.delete(`/api/tasks/${id}`),
     updateStatus: (id, status) => api.patch(`/api/tasks/${id}/status`, { status }),
 };
@@ -118,5 +118,5 @@ export const projectMessagesService = {
 export const messageService = {
     getByProject: (projectId) => api.get(`/api/messages/chat/${projectId}`),
     send: (projectId, content) =>
-        api.post("/api/messages/send", { chatId: projectId, content }),
+        api.post("/api/messages/send", { chatId: projectId, content, projectId }),
 };

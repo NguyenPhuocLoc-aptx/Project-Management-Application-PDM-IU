@@ -18,18 +18,10 @@ public class RealTimeChatController {
     @Autowired
     private SimpMessagingTemplate simpMessagingTemplate;
 
-
     @MessageMapping("/chat/{groupId}")
-    public Message sendToUser(@Payload Message message,
-
-                              @DestinationVariable String groupId) throws UserException, ChatException {
-
-
-        simpMessagingTemplate.convertAndSendToUser(groupId, "/private",
-                message);
-
-
-
+    public Message sendToGroup(@Payload Message message,
+                               @DestinationVariable String groupId) throws UserException, ChatException {
+        simpMessagingTemplate.convertAndSend("/group/" + groupId, message);
         return message;
     }
 

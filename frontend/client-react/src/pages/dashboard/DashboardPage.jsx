@@ -32,7 +32,6 @@ export default function DashboardPage() {
     const [sortBy, setSortBy] = useState("updated");
     const [statusFilter, setStatusFilter] = useState("ALL");
     const [wsModalOpen, setWsModalOpen] = useState(false);
-    const [projModalOpen, setProjModalOpen] = useState(false);
 
     // ── Derived: filtered + sorted project list ─────────────────────
     const visibleProjects = useMemo(() => {
@@ -94,7 +93,7 @@ export default function DashboardPage() {
                 </div>
 
                 <button
-                    onClick={() => setProjModalOpen(true)}
+                    onClick={openNewProject}
                     className="btn-primary px-5 py-2.5 rounded-xl self-start sm:self-auto shadow-lg shadow-primary/20"
                 >
                     <span className="material-symbols-outlined text-sm">add</span>
@@ -177,13 +176,7 @@ export default function DashboardPage() {
                 }}
             />
 
-            <NewProjectModal
-                open={projModalOpen}
-                onClose={() => setProjModalOpen(false)}
-                onCreated={addProject}
-                workspaces={workspaces}
-                defaultWorkspaceId={activeWorkspaceId || workspaces[0]?.id || ""}
-            />
+
         </div>
     );
 }

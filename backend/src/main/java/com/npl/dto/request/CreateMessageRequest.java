@@ -12,5 +12,6 @@ public class CreateMessageRequest {
 	private String content;
 	private String parentId;
 	private String attachmentUrl;
+	private String projectId;
 
 }

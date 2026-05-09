@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { ToastContext } from '../context/ToastContext';
+import { ToastContext } from '../../context/ToastContext';
 
 const Toast = ({ id, message, type }) => {
     const bgColor = {
