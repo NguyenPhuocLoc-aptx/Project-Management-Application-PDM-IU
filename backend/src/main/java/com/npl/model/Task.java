@@ -20,7 +20,8 @@ import java.util.List;
         @Index(name = "idx_task_assignee",   columnList = "assignee_id"),
         @Index(name = "idx_task_created_by", columnList = "created_by"),
         @Index(name = "idx_task_status",     columnList = "status"),
-        @Index(name = "idx_task_due_date",   columnList = "due_date")
+        @Index(name = "idx_task_due_date",   columnList = "due_date"),
+        @Index(name = "idx_task_parent",     columnList = "parent_task_id")
 })
 @Getter
 @Setter
@@ -103,4 +104,13 @@ public class Task {
     @OneToMany(mappedBy = "parentTask", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @Builder.Default
     private List<Task> subTasks = new ArrayList<>();
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "task_labels",
+            joinColumns = @JoinColumn(name = "task_id"),
+            inverseJoinColumns = @JoinColumn(name = "label_id")
+    )
+    @Builder.Default
+    private List<Label> labels = new ArrayList<>();
 }

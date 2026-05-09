@@ -23,18 +23,22 @@ import com.npl.dto.request.CreateTaskRequest;
 @Service
 public class TaskServiceImpl implements TaskService {
 
+	// AFTER
 	private final TaskRepository taskRepository;
 	private final UserService userService;
 	private final ProjectService projectService;
 	private final NotificationService notificationService;
+	private final com.npl.repository.LabelRepository labelRepository;
 
 	@Autowired
 	public TaskServiceImpl(TaskRepository taskRepository, UserService userService,
-						   ProjectService projectService, NotificationService notificationService) {
+						   ProjectService projectService, NotificationService notificationService,
+						   com.npl.repository.LabelRepository labelRepository) {
 		this.taskRepository = taskRepository;
 		this.userService = userService;
 		this.projectService = projectService;
 		this.notificationService = notificationService;
+		this.labelRepository = labelRepository;
 	}
 
 	@Override
@@ -51,10 +55,12 @@ public class TaskServiceImpl implements TaskService {
 
 	@Override
 	public Task createIssue(CreateTaskRequest req, String userId)
-			throws UserException, ProjectException {
+			throws UserException, ProjectException, TaskException {
 
 		User user = getUserOrThrow(userId);
 		Project project = projectService.getProjectById(req.getProjectId());
+
+		validateSubTaskDepth(req.getParentTaskId());
 
 		Task task = Task.builder()
 				.title(req.getTitle())
@@ -67,7 +73,15 @@ public class TaskServiceImpl implements TaskService {
 				.createdBy(user)
 				.build();
 
-		// Assign if assigneeId provided
+		if (req.getParentTaskId() != null && !req.getParentTaskId().isBlank()) {
+			Task parentTask = taskRepository.findById(req.getParentTaskId())
+					.orElseThrow(() -> new TaskException("Parent task not found: " + req.getParentTaskId()));
+			if (!parentTask.getProject().getId().equals(req.getProjectId())) {
+				throw new TaskException("Parent task does not belong to the same project.");
+			}
+			task.setParentTask(parentTask);
+		}
+
 		if (req.getAssigneeId() != null && !req.getAssigneeId().isBlank()) {
 			try {
 				User assignee = userService.findUserById(req.getAssigneeId());
@@ -121,6 +135,11 @@ public class TaskServiceImpl implements TaskService {
 	}
 
 	@Override
+	public List<Task> getSubTasks(String parentTaskId) {
+		return taskRepository.findAllByParentTaskId(parentTaskId);
+	}
+
+	@Override
 	public List<Task> searchIssues(String title, String status, String priority, String assigneeId) {
 		return taskRepository.findAll().stream()
 				.filter(t -> title      == null || (t.getTitle()    != null && t.getTitle().contains(title)))
@@ -157,6 +176,29 @@ public class TaskServiceImpl implements TaskService {
 		return taskRepository.save(task);
 	}
 
+	@Override
+	public Task addLabel(String taskId, String labelId) throws TaskException {
+		Task task = taskRepository.findById(taskId)
+				.orElseThrow(() -> new TaskException("Task not found: " + taskId));
+		com.npl.model.Label label = labelRepository.findById(labelId)
+				.orElseThrow(() -> new TaskException("Label not found: " + labelId));
+		if (!task.getProject().getId().equals(label.getProject().getId())) {
+			throw new TaskException("Label does not belong to the same project as the task.");
+		}
+		if (!task.getLabels().contains(label)) {
+			task.getLabels().add(label);
+		}
+		return taskRepository.save(task);
+	}
+
+	@Override
+	public Task removeLabel(String taskId, String labelId) throws TaskException {
+		Task task = taskRepository.findById(taskId)
+				.orElseThrow(() -> new TaskException("Task not found: " + taskId));
+		task.getLabels().removeIf(l -> l.getId().equals(labelId));
+		return taskRepository.save(task);
+	}
+
 	// ── helpers ──────────────────────────────────────────────────────
 
 	private User getUserOrThrow(String userId) throws UserException {
@@ -176,5 +218,13 @@ public class TaskServiceImpl implements TaskService {
 	private TaskType parseType(String t) {
 		try { return t != null ? TaskType.valueOf(t.toUpperCase()) : TaskType.TASK; }
 		catch (IllegalArgumentException e) { return TaskType.TASK; }
+	}
+	private void validateSubTaskDepth(String parentTaskId) throws TaskException {
+		if (parentTaskId == null) return;
+		Task parent = taskRepository.findById(parentTaskId)
+				.orElseThrow(() -> new TaskException("Parent task not found: " + parentTaskId));
+		if (parent.getParentTask() != null) {
+			throw new TaskException("Sub-tasks cannot be nested more than one level deep.");
+		}
 	}
 }

@@ -41,7 +41,7 @@ public class AppConfig {
 						.requestMatchers(
 								"/auth/**",
 								"/api/auth/**",
-								"/api/invitations/accept/**",
+								"/api/invitations/accept",
 								"/ws/**"
 						).permitAll()
 						.requestMatchers("/api/admin/**").hasRole("ADMIN")

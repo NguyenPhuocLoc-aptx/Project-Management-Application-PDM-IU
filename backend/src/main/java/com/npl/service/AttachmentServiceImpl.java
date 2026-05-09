@@ -85,24 +85,40 @@ public class AttachmentServiceImpl implements AttachmentService {
         TaskAttachment attachment = taskAttachmentRepository.findById(attachmentId)
                 .orElseThrow(() -> new RuntimeException("Attachment not found"));
 
-        // 1. Delete the physical file from the hard drive
+        if (!attachment.getTask().getId().equals(taskId)) {
+            throw new RuntimeException("Attachment does not belong to the specified task.");
+        }
+
+        if (!attachment.getUploadedBy().getEmail().equals(username)) {
+            throw new RuntimeException("Access denied: you did not upload this attachment.");
+        }
+
         try {
-            String fileName = attachment.getFileUrl().substring(attachment.getFileUrl().lastIndexOf("/") + 1);
+            String fileName = attachment.getFileUrl()
+                    .substring(attachment.getFileUrl().lastIndexOf("/") + 1);
             Path filePath = Paths.get(UPLOAD_DIR + fileName);
             Files.deleteIfExists(filePath);
         } catch (IOException e) {
             System.err.println("Warning: Could not delete local file: " + e.getMessage());
         }
 
-        // 2. Delete the record from MySQL
         taskAttachmentRepository.delete(attachment);
     }
 
-    // Helper method to convert the DB model into the Response DTO
     private AttachmentResponse mapToResponse(TaskAttachment attachment) {
-        // Fixes the "redundant variable" warning.
-        // NOTE: Once you add fields to your AttachmentResponse DTO,
-        // you will change this back to setting variables before returning!
-        return new AttachmentResponse();
+        AttachmentResponse response = new AttachmentResponse();
+        response.setId(attachment.getId());
+        response.setTaskId(attachment.getTask().getId());
+        response.setFileName(attachment.getFileName());
+        response.setFileUrl(attachment.getFileUrl());
+        response.setFileType(attachment.getFileType());
+        response.setFileSize(attachment.getFileSize());
+        response.setUploadedByName(
+                attachment.getUploadedBy().getFullName() != null
+                        ? attachment.getUploadedBy().getFullName()
+                        : attachment.getUploadedBy().getEmail()
+        );
+        response.setCreatedAt(attachment.getCreatedAt());
+        return response;
     }
 }

@@ -33,5 +33,10 @@ public interface TaskService {
 
 	Task addUserToIssue(String issueId, String userId) throws UserException, TaskException; // ✅
 
-	Task updateStatus(String issueId, String status) throws TaskException;      // ✅
+	Task updateStatus(String issueId, String status) throws TaskException;
+
+	Task addLabel(String taskId, String labelId) throws TaskException;
+	Task removeLabel(String taskId, String labelId) throws TaskException;
+
+	List<Task> getSubTasks(String parentTaskId);
 }

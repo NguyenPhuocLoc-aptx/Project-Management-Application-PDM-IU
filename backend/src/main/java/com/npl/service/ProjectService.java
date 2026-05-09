@@ -11,31 +11,24 @@ import com.npl.model.User;
 
 public interface ProjectService {
 
-	// Changed Long to String
-	Project createProject(Project project, String userId) throws UserException;
-
-//  List<Project> getProjectsByOwner(User owner) throws ProjectException;
+	Project createProject(Project project, String userId, String workspaceId) throws UserException, ProjectException;
 
 	List<Project> getProjectsByTeam(User user,String category,String tag) throws ProjectException;
 
-	// Changed Long to String
 	Project getProjectById(String projectId) throws ProjectException;
 
-	// Changed Longs to Strings
-	String deleteProject(String projectId, String userId) throws UserException;
+	Project getProjectByIdForUser(String projectId, String userId) throws ProjectException, UserException;
 
-	// Changed Long to String
+	String deleteProject(String projectId, String userId) throws UserException, ProjectException;
+
 	Project updateProject(Project updatedProject, String id) throws ProjectException;
 
 	List<Project> searchProjects(String keyword, User user) throws ProjectException;
 
-	// Changed Longs to Strings
 	void addUserToProject(String projectId, String userId) throws UserException, ProjectException;
 
-	// Changed Longs to Strings
 	void removeUserFromProject(String projectId, String userId) throws UserException, ProjectException;
 
-	// Changed Long to String
 	Chat getChatByProjectId(String projectId) throws ProjectException, ChatException;
 
 }

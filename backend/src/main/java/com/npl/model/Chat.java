@@ -11,9 +11,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "chats", indexes = {
-        @Index(name = "idx_chat_project", columnList = "project_id")
-})
+@Table(name = "chat_members",
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uk_cm_chat_user", columnNames = {"chat_id", "user_id"})
+        },
+        indexes = {
+                @Index(name = "idx_cm_user", columnList = "user_id")
+        }
+)
 @Getter
 @Setter
 @NoArgsConstructor

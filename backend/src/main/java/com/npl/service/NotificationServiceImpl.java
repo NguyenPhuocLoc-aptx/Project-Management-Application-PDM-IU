@@ -76,6 +76,9 @@ public class NotificationServiceImpl implements NotificationService {
         notification.setMessage(message);
         notification.setIsRead(false);
         notification.setCreatedAt(LocalDateTime.now());
+        notification.setEntityType(entityType);
+        notification.setEntityId(entityId);
+        notification.setType(com.npl.enums.NotificationType.valueOf(type));
 
         // 3. Save to the database
         notificationRepository.save(notification);

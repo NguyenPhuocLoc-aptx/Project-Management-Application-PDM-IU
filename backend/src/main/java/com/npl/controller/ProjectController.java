@@ -48,9 +48,11 @@ public class ProjectController {
     }
 
     @GetMapping("/{projectId}")
-    public ResponseEntity<Project> getProjectById(@PathVariable String projectId)
-            throws ProjectException {
-        Project project = projectService.getProjectById(projectId);
+    public ResponseEntity<Project> getProjectById(
+            @PathVariable String projectId,
+            @RequestHeader("Authorization") String token) throws ProjectException, UserException {
+        User user = userService.findUserProfileByJwt(token);
+        Project project = projectService.getProjectByIdForUser(projectId, user.getId());
         return new ResponseEntity<>(project, HttpStatus.OK);
     }
 
@@ -74,15 +76,13 @@ public class ProjectController {
         if (request.getPriority() != null) project.setPriority(request.getPriority());
         if (request.getProgress() != null) project.setProgress(request.getProgress());
 
-        // 2. Handle the Workspace Foreign Key cleanly
-        if (request.getWorkspaceId() != null && !request.getWorkspaceId().isEmpty()) {
-            Workspace workspace = new Workspace();
-            workspace.setId(request.getWorkspaceId());
-            project.setWorkspace(workspace);
+
+        if (request.getWorkspaceId() == null || request.getWorkspaceId().isEmpty()) {
+            throw new ProjectException("Workspace ID is required.");
         }
 
-        // 3. Save project (Service will handle assigning the owner via user.getId())
-        Project created = projectService.createProject(project, user.getId());
+        project.setWorkspace(null); // cleared; service will assign via validated lookup
+        Project created = projectService.createProject(project, user.getId(), request.getWorkspaceId());
         userService.updateUsersProjectSize(user, 1);
 
         return new ResponseEntity<>(created, HttpStatus.CREATED);

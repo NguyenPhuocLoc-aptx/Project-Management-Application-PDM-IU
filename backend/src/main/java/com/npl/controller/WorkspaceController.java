@@ -87,7 +87,7 @@ public class WorkspaceController {
         project.setWorkspace(ws);
         project.setOwner(user);
 
-        Project created = projectService.createProject(project, user.getId());
+        Project created = projectService.createProject(project, user.getId(), workspaceId);
         return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
 }

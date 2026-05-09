@@ -41,8 +41,7 @@ public class CommentController {
     // ── GET /api/tasks/{taskId}/comments  (called by frontend) ───────
     @GetMapping("/api/tasks/{taskId}/comments")
     public ResponseEntity<List<Comment>> getCommentsByTask(
-            @PathVariable String taskId)
-            throws TaskException {
+            @PathVariable String taskId) {
 
         List<Comment> comments = commentService.findCommentsByTaskId(taskId);
         return ResponseEntity.ok(comments);
@@ -75,8 +74,7 @@ public class CommentController {
     // ── GET /api/comments/task/{taskId}  (original endpoint — kept) ──
     @GetMapping("/api/comments/task/{taskId}")
     public ResponseEntity<List<Comment>> getCommentsByTaskId(
-            @PathVariable String taskId)
-            throws TaskException {
+            @PathVariable String taskId) {
 
         return new ResponseEntity<>(commentService.findCommentsByTaskId(taskId), HttpStatus.OK);
     }

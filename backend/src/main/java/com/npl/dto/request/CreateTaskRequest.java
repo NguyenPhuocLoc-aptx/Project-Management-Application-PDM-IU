@@ -27,4 +27,7 @@ public class CreateTaskRequest {
 
 	@JsonAlias("assignee_id")
 	private String assigneeId;
+
+	@JsonAlias("parent_task_id")
+	private String parentTaskId;
 }

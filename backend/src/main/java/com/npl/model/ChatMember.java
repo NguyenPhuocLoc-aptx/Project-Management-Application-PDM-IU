@@ -2,15 +2,18 @@ package com.npl.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "chat_members", indexes = {
-        @Index(name = "idx_cm_user", columnList = "user_id"),
-        @Index(name = "uk_cm_chat_user", columnList = "chat_id,user_id", unique = true)
-})
+@Table(name = "chat_members",
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uk_cm_chat_user", columnNames = {"chat_id", "user_id"})
+        },
+        indexes = {
+                @Index(name = "idx_cm_user", columnList = "user_id")
+        }
+)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -31,7 +34,13 @@ public class ChatMember {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @CreationTimestamp
     @Column(name = "joined_at", nullable = false, updatable = false)
     private LocalDateTime joinedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        if (joinedAt == null) {
+            joinedAt = LocalDateTime.now();
+        }
+    }
 }

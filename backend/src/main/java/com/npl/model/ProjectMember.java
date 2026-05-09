@@ -9,10 +9,14 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "project_members", indexes = {
-        @Index(name = "idx_pm_user", columnList = "user_id"),
-        @Index(name = "uk_pm_project_user", columnList = "project_id,user_id", unique = true)
-})
+@Table(name = "project_members",
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uk_pm_project_user", columnNames = {"project_id", "user_id"})
+        },
+        indexes = {
+                @Index(name = "idx_pm_user", columnList = "user_id")
+        }
+)
 @Getter
 @Setter
 @NoArgsConstructor

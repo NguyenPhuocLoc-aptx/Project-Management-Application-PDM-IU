@@ -85,6 +85,12 @@ public class TaskController {
         return ResponseEntity.ok(new ApiResponse(result, true));
     }
 
+    @GetMapping("/api/tasks/{taskId}/subtasks")
+    public ResponseEntity<List<Task>> getSubTasks(@PathVariable String taskId) {
+        List<Task> subTasks = taskService.getSubTasks(taskId);
+        return ResponseEntity.ok(subTasks);
+    }
+
     // ── PATCH /api/tasks/{taskId}/status ────────────────────────────
     @PatchMapping("/api/tasks/{taskId}/status")
     public ResponseEntity<Task> updateTaskStatus(
@@ -103,5 +109,26 @@ public class TaskController {
         User user = userService.findUserProfileByJwt(jwt);
         List<Task> tasks = taskService.getIssuesByAssigneeId(user.getId());
         return ResponseEntity.ok(tasks);
+    }
+    @PostMapping("/api/tasks/{taskId}/labels/{labelId}")
+    public ResponseEntity<Task> addLabelToTask(
+            @PathVariable String taskId,
+            @PathVariable String labelId,
+            @RequestHeader("Authorization") String jwt)
+            throws UserException, TaskException, ProjectException {
+        userService.findUserProfileByJwt(jwt);
+        Task task = taskService.addLabel(taskId, labelId);
+        return ResponseEntity.ok(task);
+    }
+
+    @DeleteMapping("/api/tasks/{taskId}/labels/{labelId}")
+    public ResponseEntity<Task> removeLabelFromTask(
+            @PathVariable String taskId,
+            @PathVariable String labelId,
+            @RequestHeader("Authorization") String jwt)
+            throws UserException, TaskException, ProjectException {
+        userService.findUserProfileByJwt(jwt);
+        Task task = taskService.removeLabel(taskId, labelId);
+        return ResponseEntity.ok(task);
     }
 }

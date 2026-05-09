@@ -33,12 +33,11 @@ public class AuthController {
 	private final UserRepository userRepository;
 	private final PasswordEncoder passwordEncoder;
 	private final CustomUserDetailsService customUserDetails;
-
-	// Injected JwtProvider to fix the non-static method error
 	private final JwtProvider jwtProvider;
-
 	private final PasswordResetTokenService passwordResetTokenService;
 	private final UserService userService;
+	private final com.npl.repository.UserProfileRepository userProfileRepository;
+	private final com.npl.service.SubscriptionService subscriptionService;
 
 	@PostMapping("/signup")
 	public ResponseEntity<AuthResponse> createUserHandler(@RequestBody User user) throws UserException {
@@ -59,12 +58,22 @@ public class AuthController {
 		createdUser.setPassword(passwordEncoder.encode(password));
 		createdUser.setRole(user.getRole() != null ? user.getRole() : UserRole.USER);
 
-		userRepository.save(createdUser);
+		User savedUser = userRepository.save(createdUser);
+
+		com.npl.model.UserProfile profile = com.npl.model.UserProfile.builder()
+				.user(savedUser)
+				.build();
+		userProfileRepository.save(profile);
+
+		try {
+			subscriptionService.createSubscription(savedUser.getId());
+		} catch (Exception e) {
+			throw new UserException("Failed to initialize subscription: " + e.getMessage());
+		}
 
 		Authentication authentication = new UsernamePasswordAuthenticationToken(email, password);
 		SecurityContextHolder.getContext().setAuthentication(authentication);
 
-		// Calling the instance method instead of the static method
 		String token = jwtProvider.generateToken(authentication);
 
 		AuthResponse authResponse = new AuthResponse();
@@ -83,28 +92,19 @@ public class AuthController {
 		Authentication authentication = authenticate(username, password);
 		SecurityContextHolder.getContext().setAuthentication(authentication);
 
-		// Calling the instance method instead of the static method
 		String token = jwtProvider.generateToken(authentication);
 
 		AuthResponse authResponse = new AuthResponse();
 		authResponse.setMessage("Login Success");
 		authResponse.setJwt(token);
 
-		User user = userRepository.findByEmail(username)
-				.orElse(null);
-		if (user != null) {
-			authResponse.setFullName(user.getFullName());
-		}
-
+		userRepository.findByEmail(username)
+				.ifPresent(u -> authResponse.setFullName(u.getFullName()));
 		return new ResponseEntity<>(authResponse, HttpStatus.OK);
 	}
 
 	private Authentication authenticate(String username, String password) {
 		UserDetails userDetails = customUserDetails.loadUserByUsername(username);
-
-		if (userDetails == null) {
-			throw new BadCredentialsException("Invalid username or password.");
-		}
 
 		if (!passwordEncoder.matches(password, userDetails.getPassword())) {
 			throw new BadCredentialsException("Invalid username or password.");
@@ -120,7 +120,6 @@ public class AuthController {
 		System.out.println("AuthController.requestPasswordReset()");
 
 		if (user == null) {
-			// Fixed grammar warning
 			throw new UserException("User not found.");
 		}
 

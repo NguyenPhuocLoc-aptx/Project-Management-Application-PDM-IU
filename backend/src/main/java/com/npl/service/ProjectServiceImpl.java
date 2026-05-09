@@ -17,34 +17,49 @@ import com.npl.repository.ProjectMemberRepository;
 import com.npl.repository.ProjectRepository;
 
 import jakarta.transaction.Transactional;
+import com.npl.repository.WorkspaceRepository;
 
 @Service
 public class ProjectServiceImpl implements ProjectService {
 
+	// AFTER
 	private final ProjectRepository projectRepository;
 	private final ChatService chatService;
 	private final UserService userService;
 	private final ProjectMemberRepository projectMemberRepository;
+	private final WorkspaceRepository workspaceRepository;
 
 	@Autowired
 	public ProjectServiceImpl(ProjectRepository projectRepository, ChatService chatService,
-							  UserService userService, ProjectMemberRepository projectMemberRepository) {
+							  UserService userService, ProjectMemberRepository projectMemberRepository,
+							  WorkspaceRepository workspaceRepository) {
 		this.projectRepository = projectRepository;
 		this.chatService = chatService;
 		this.userService = userService;
 		this.projectMemberRepository = projectMemberRepository;
+		this.workspaceRepository = workspaceRepository;
 	}
 
+	// AFTER
 	@Override
-	public Project createProject(Project project, String userId) throws UserException {
+	public Project createProject(Project project, String userId, String workspaceId)
+			throws UserException, ProjectException {
 		User user = userService.findUserById(userId);
+
+		com.npl.model.Workspace workspace = workspaceRepository.findById(workspaceId)
+				.orElseThrow(() -> new ProjectException("Workspace not found: " + workspaceId));
 
 		Project newProject = Project.builder()
 				.owner(user)
 				.name(project.getName())
 				.description(project.getDescription())
 				.category(project.getCategory())
-				.workspace(project.getWorkspace())
+				.status(project.getStatus() != null ? project.getStatus() : com.npl.enums.ProjectStatus.PLANNING)
+				.priority(project.getPriority() != null ? project.getPriority() : com.npl.enums.Priority.MEDIUM)
+				.progress(project.getProgress() != null ? project.getProgress() : 0)
+				.startDate(project.getStartDate())
+				.endDate(project.getEndDate())
+				.workspace(workspace)
 				.build();
 
 		Project savedProject = projectRepository.save(newProject);
@@ -69,12 +84,13 @@ public class ProjectServiceImpl implements ProjectService {
 
 	@Override
 	public List<Project> getProjectsByTeam(User user, String category, String tag) throws ProjectException {
+		// Rule 3: only return projects the user is explicitly linked to
 		List<Project> projects = projectMemberRepository.findAllByUserId(user.getId())
 				.stream()
 				.map(ProjectMember::getProject)
 				.collect(Collectors.toList());
 
-		if (category != null) {
+		if (category != null && !category.isBlank()) {
 			projects = projects.stream()
 					.filter(p -> category.equalsIgnoreCase(p.getCategory()))
 					.collect(Collectors.toList());
@@ -89,9 +105,23 @@ public class ProjectServiceImpl implements ProjectService {
 				.orElseThrow(() -> new ProjectException("No project found with id " + projectId));
 	}
 
+	public Project getProjectByIdForUser(String projectId, String userId)
+			throws ProjectException, UserException {
+		Project project = getProjectById(projectId);
+		boolean isMember = projectMemberRepository.existsByProjectIdAndUserId(projectId, userId);
+		if (!isMember) {
+			throw new ProjectException("Access denied: you are not a member of this project.");
+		}
+		return project;
+	}
+
 	@Override
-	public String deleteProject(String projectId, String userId) throws UserException {
+	public String deleteProject(String projectId, String userId) throws UserException, ProjectException {
 		userService.findUserById(userId);
+		Project project = getProjectById(projectId);
+		if (!project.getOwner().getId().equals(userId)) {
+			throw new ProjectException("Only the project owner can delete this project.");
+		}
 		projectRepository.deleteById(projectId);
 		return "Project deleted";
 	}

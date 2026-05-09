@@ -12,5 +12,5 @@ public interface CommentService {
 
     void deleteComment(String commentId, String userId) throws UserException, TaskException;
 
-    List<Comment> findCommentsByTaskId(String taskId) throws TaskException;
+    List<Comment> findCommentsByTaskId(String taskId);
 }
