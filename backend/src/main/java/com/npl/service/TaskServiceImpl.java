@@ -23,7 +23,6 @@ import com.npl.dto.request.CreateTaskRequest;
 @Service
 public class TaskServiceImpl implements TaskService {
 
-	// AFTER
 	private final TaskRepository taskRepository;
 	private final UserService userService;
 	private final ProjectService projectService;
@@ -50,7 +49,7 @@ public class TaskServiceImpl implements TaskService {
 	@Override
 	public List<Task> getIssueByProjectId(String projectId) throws ProjectException {
 		projectService.getProjectById(projectId);
-		return taskRepository.findAllByProjectId(projectId);
+		return taskRepository.findAllByProjectIdOrderByOrderIndexAsc(projectId);
 	}
 
 	@Override
@@ -62,6 +61,12 @@ public class TaskServiceImpl implements TaskService {
 
 		validateSubTaskDepth(req.getParentTaskId());
 
+		// Compute next order index within the target status column
+		int nextIndex = taskRepository
+				.findMaxOrderIndexByProjectIdAndStatus(req.getProjectId(), parseStatus(req.getStatus()))
+				.map(i -> i + 1)
+				.orElse(0);
+
 		Task task = Task.builder()
 				.title(req.getTitle())
 				.description(req.getDescription())
@@ -71,6 +76,7 @@ public class TaskServiceImpl implements TaskService {
 				.dueDate(req.getDueDate())
 				.project(project)
 				.createdBy(user)
+				.orderIndex(req.getOrderIndex() != null ? req.getOrderIndex() : nextIndex)
 				.build();
 
 		if (req.getParentTaskId() != null && !req.getParentTaskId().isBlank()) {
@@ -106,6 +112,7 @@ public class TaskServiceImpl implements TaskService {
 		if (req.getPriority()    != null) task.setPriority(parsePriority(req.getPriority()));
 		if (req.getStatus()      != null) task.setStatus(parseStatus(req.getStatus()));
 		if (req.getType()        != null) task.setType(parseType(req.getType()));
+		if (req.getOrderIndex()  != null) task.setOrderIndex(req.getOrderIndex());
 
 		if (req.getAssigneeId() != null) {
 			if (req.getAssigneeId().isBlank()) {
@@ -219,6 +226,7 @@ public class TaskServiceImpl implements TaskService {
 		try { return t != null ? TaskType.valueOf(t.toUpperCase()) : TaskType.TASK; }
 		catch (IllegalArgumentException e) { return TaskType.TASK; }
 	}
+
 	private void validateSubTaskDepth(String parentTaskId) throws TaskException {
 		if (parentTaskId == null) return;
 		Task parent = taskRepository.findById(parentTaskId)

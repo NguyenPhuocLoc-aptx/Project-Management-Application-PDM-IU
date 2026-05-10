@@ -12,7 +12,6 @@ import java.util.Optional; // FIX: Added this crucial import!
 @Repository
 public interface ChatRepository extends JpaRepository<Chat, String> {
 
-    // FIX: Kept the Optional one, deleted the duplicate List one
     Optional<Chat> findByProjectId(String projectId);
 
     @Query("""
@@ -24,3 +23,5 @@ public interface ChatRepository extends JpaRepository<Chat, String> {
 
     List<Chat> findByNameContainingIgnoreCase(String name);
 }
+
+

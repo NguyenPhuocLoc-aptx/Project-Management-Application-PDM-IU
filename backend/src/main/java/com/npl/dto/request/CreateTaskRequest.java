@@ -30,4 +30,7 @@ public class CreateTaskRequest {
 
 	@JsonAlias("parent_task_id")
 	private String parentTaskId;
+
+	@JsonAlias("order_index")
+	private Integer orderIndex;
 }

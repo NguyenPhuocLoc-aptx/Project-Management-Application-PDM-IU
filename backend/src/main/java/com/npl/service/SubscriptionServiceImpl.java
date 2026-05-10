@@ -26,12 +26,13 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException("User not found."));
 
-        Subscription subscription = new Subscription();
-        subscription.setUser(user);
-        subscription.setPlanType(PlanType.FREE);
-        subscription.setStatus(SubscriptionStatus.ACTIVE);
-        subscription.setStartDate(LocalDateTime.now());
-        subscription.setEndDate(null);
+        Subscription subscription = Subscription.builder()
+                .user(user)
+                .planType(PlanType.FREE)
+                .status(SubscriptionStatus.ACTIVE)
+                .startDate(LocalDateTime.now())
+                .endDate(null)
+                .build();
 
         return subscriptionRepository.save(subscription);
     }
@@ -55,7 +56,6 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         Subscription subscription = subscriptionRepository.findByUser_Id(user.getId())
                 .orElseThrow(() -> new Exception("Subscription not found."));
 
-        // FIXED: Map the string from your request to your actual Enum
         if (request.getPlanType() != null) {
             subscription.setPlanType(PlanType.valueOf(request.getPlanType().toUpperCase()));
         }
@@ -64,8 +64,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         subscription.setEndDate(LocalDateTime.now().plusMonths(1));
         subscription.setStatus(SubscriptionStatus.ACTIVE);
 
-        Subscription updatedSub = subscriptionRepository.save(subscription);
-        return mapToResponse(updatedSub);
+        return mapToResponse(subscriptionRepository.save(subscription));
     }
 
     @Override
@@ -77,25 +76,20 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                 .orElseThrow(() -> new Exception("Subscription not found."));
 
         subscription.setStatus(SubscriptionStatus.CANCELLED);
-        subscription.setEndDate(LocalDateTime.now()); // Expire immediately
+        subscription.setEndDate(LocalDateTime.now());
 
-        Subscription cancelledSub = subscriptionRepository.save(subscription);
-        return mapToResponse(cancelledSub);
+        return mapToResponse(subscriptionRepository.save(subscription));
     }
 
-    // Helper method to convert the DB model into the Response DTO
     private SubscriptionResponse mapToResponse(Subscription subscription) {
         SubscriptionResponse response = new SubscriptionResponse();
         response.setId(subscription.getId());
-
-        // FIXED: Convert Enums to Strings safely
         if (subscription.getPlanType() != null) {
             response.setPlanType(subscription.getPlanType().name());
         }
         if (subscription.getStatus() != null) {
             response.setStatus(subscription.getStatus().name());
         }
-
         response.setStartDate(subscription.getStartDate());
         response.setEndDate(subscription.getEndDate());
         return response;

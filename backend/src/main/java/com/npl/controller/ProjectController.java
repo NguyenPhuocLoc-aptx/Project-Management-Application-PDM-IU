@@ -3,8 +3,6 @@ package com.npl.controller;
 import java.util.List;
 
 import com.npl.dto.request.InvitationRequest;
-import com.npl.model.Invitation;
-import com.npl.model.Workspace;
 import com.npl.dto.request.ProjectCreateRequest;
 import com.npl.dto.request.ProjectInvitationRequest;
 import com.npl.service.InvitationService;
@@ -32,7 +30,8 @@ public class ProjectController {
     private final InvitationService invitationService;
 
     @Autowired
-    public ProjectController(ProjectService projectService, UserService userService, InvitationService invitationService) {
+    public ProjectController(ProjectService projectService, UserService userService,
+                             InvitationService invitationService) {
         this.projectService = projectService;
         this.userService = userService;
         this.invitationService = invitationService;
@@ -63,7 +62,6 @@ public class ProjectController {
 
         User user = userService.findUserProfileByJwt(token);
 
-        // 1. Manually map the DTO data to your Entity
         Project project = new Project();
         project.setName(request.getName());
         project.setDescription(request.getDescription());
@@ -71,17 +69,15 @@ public class ProjectController {
         project.setStartDate(request.getStartDate());
         project.setEndDate(request.getEndDate());
 
-        // Only set these if they are provided, otherwise let the @Builder.Default defaults take over
-        if (request.getStatus() != null) project.setStatus(request.getStatus());
+        if (request.getStatus()   != null) project.setStatus(request.getStatus());
         if (request.getPriority() != null) project.setPriority(request.getPriority());
         if (request.getProgress() != null) project.setProgress(request.getProgress());
-
 
         if (request.getWorkspaceId() == null || request.getWorkspaceId().isEmpty()) {
             throw new ProjectException("Workspace ID is required.");
         }
 
-        project.setWorkspace(null); // cleared; service will assign via validated lookup
+        project.setWorkspace(null);
         Project created = projectService.createProject(project, user.getId(), request.getWorkspaceId());
         userService.updateUsersProjectSize(user, 1);
 
@@ -103,10 +99,9 @@ public class ProjectController {
             @PathVariable String projectId,
             @RequestHeader("Authorization") String token) throws UserException, ProjectException {
         User user = userService.findUserProfileByJwt(token);
-
-        ApiResponse response = new ApiResponse(projectService.deleteProject(projectId, user.getId()), true);
+        ApiResponse response = new ApiResponse(
+                projectService.deleteProject(projectId, user.getId()), true);
         userService.updateUsersProjectSize(user, -1);
-
         return ResponseEntity.ok(response);
     }
 
@@ -123,13 +118,12 @@ public class ProjectController {
             @PathVariable String userId,
             @PathVariable String projectId) throws UserException, ProjectException {
         projectService.addUserToProject(projectId, userId);
-
         return ResponseEntity.ok(new ApiResponse("User added to the project successfully", true));
     }
 
     @GetMapping("/{projectId}/chat")
-    public ResponseEntity<Chat> getChatByProjectId(@PathVariable String projectId)
-            throws ProjectException, ChatException {
+    public ResponseEntity<Chat> getChatByProjectId(
+            @PathVariable String projectId) throws ProjectException, ChatException {
         Chat chat = projectService.getChatByProjectId(projectId);
         return chat != null ? ResponseEntity.ok(chat) : ResponseEntity.notFound().build();
     }
@@ -147,23 +141,6 @@ public class ProjectController {
 
         invitationService.sendInvitation(invReq, user.getEmail());
 
-        ApiResponse res = new ApiResponse();
-        res.setMessage("User invited to the project successfully");
-        res.setStatus(true);
-        return ResponseEntity.ok(res);
-    }
-
-    @GetMapping("/accept_invitation")
-    public ResponseEntity<Invitation> acceptInvitation(
-            @RequestParam String token,
-            @RequestHeader("Authorization") String jwt) throws Exception {
-
-        User user = userService.findUserProfileByJwt(jwt);
-
-        Invitation invitation = invitationService.acceptInvitation(token, user.getEmail());
-
-        projectService.addUserToProject(invitation.getProject().getId(), user.getId());
-
-        return new ResponseEntity<>(invitation, HttpStatus.ACCEPTED);
+        return ResponseEntity.ok(new ApiResponse("User invited to the project successfully", true));
     }
 }

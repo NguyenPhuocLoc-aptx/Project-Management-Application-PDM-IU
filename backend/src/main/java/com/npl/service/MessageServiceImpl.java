@@ -2,7 +2,6 @@ package com.npl.service;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.npl.exception.ChatException;
@@ -11,23 +10,19 @@ import com.npl.exception.UserException;
 import com.npl.model.Chat;
 import com.npl.model.Message;
 import com.npl.model.User;
+import com.npl.repository.ChatRepository;
 import com.npl.repository.MessageRepository;
 import com.npl.repository.UserRepository;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class MessageServiceImpl implements MessageService {
 
     private final MessageRepository messageRepository;
     private final UserRepository userRepository;
-    private final ProjectService projectService;
-
-    @Autowired
-    public MessageServiceImpl(MessageRepository messageRepository, UserRepository userRepository,
-                              ProjectService projectService) {
-        this.messageRepository = messageRepository;
-        this.userRepository = userRepository;
-        this.projectService = projectService;
-    }
+    private final ChatRepository chatRepository;
 
     @Override
     public Message sendMessage(String senderId, String projectId, String content)
@@ -36,8 +31,8 @@ public class MessageServiceImpl implements MessageService {
         User sender = userRepository.findById(senderId)
                 .orElseThrow(() -> new UserException("User not found with id: " + senderId));
 
-        Chat chat = projectService.getChatByProjectId(projectId);
-        if (chat == null) throw new ChatException("Chat not found for project " + projectId);
+        Chat chat = chatRepository.findByProjectId(projectId)
+                .orElseThrow(() -> new ChatException("No chat found for project: " + projectId));
 
         Message message = Message.builder()
                 .content(content)
@@ -49,8 +44,12 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public List<Message> getMessagesByProjectId(String projectId) throws ProjectException, ChatException {
-        Chat chat = projectService.getChatByProjectId(projectId);
+    public List<Message> getMessagesByProjectId(String projectId)
+            throws ProjectException, ChatException {
+
+        Chat chat = chatRepository.findByProjectId(projectId)
+                .orElseThrow(() -> new ChatException("No chat found for project: " + projectId));
+
         return messageRepository.findAllByChatIdAndParentIsNullOrderByCreatedAtAsc(chat.getId());
     }
 }

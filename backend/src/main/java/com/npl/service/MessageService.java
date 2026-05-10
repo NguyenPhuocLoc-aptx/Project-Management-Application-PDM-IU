@@ -9,9 +9,9 @@ import com.npl.model.Message;
 
 public interface MessageService {
 
-    Message sendMessage(String senderId, String projectId, String content)  // ✅ Long → String
+    Message sendMessage(String senderId, String projectId, String content)
             throws UserException, ChatException, ProjectException;
 
-    List<Message> getMessagesByProjectId(String projectId)  // ✅ Long → String
+    List<Message> getMessagesByProjectId(String projectId)
             throws ProjectException, ChatException;
 }

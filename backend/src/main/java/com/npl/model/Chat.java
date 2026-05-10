@@ -11,14 +11,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "chats")
+@Table(name = "chats",
+        indexes = {
+                @Index(name = "idx_chat_project", columnList = "project_id")
+        })
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class Chat {
-
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

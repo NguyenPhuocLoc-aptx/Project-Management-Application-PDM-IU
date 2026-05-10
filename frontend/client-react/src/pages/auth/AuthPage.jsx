@@ -1,4 +1,3 @@
-// src/pages/auth/AuthPage.jsx
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
@@ -392,8 +391,8 @@ function VisualColumn() {
                         <div
                             key={title}
                             className={`p-6 rounded-[0.75rem] ${glass
-                                    ? "bg-white/80 backdrop-blur-xl"
-                                    : "bg-surface-container-lowest"
+                                ? "bg-white/80 backdrop-blur-xl"
+                                : "bg-surface-container-lowest"
                                 }`}
                         >
                             <span className="material-symbols-outlined text-primary mb-2 block">
@@ -415,7 +414,18 @@ export default function AuthPage() {
     const navigate = useNavigate();
     const [mode, setMode] = useState("login"); // "login" | "register"
 
-    // If already authenticated, redirect away immediately
+    useEffect(() => {
+        if (!isAuthenticated) return;
+
+        const pendingToken = sessionStorage.getItem("pendingInviteToken");
+        if (pendingToken) {
+            sessionStorage.removeItem("pendingInviteToken");
+            navigate(`/accept-invitation?token=${pendingToken}`, { replace: true });
+            return;
+        }
+
+        navigate("/dashboard", { replace: true });
+    }, [isAuthenticated, navigate]);
     useEffect(() => {
         if (isAuthenticated) navigate("/dashboard", { replace: true });
     }, [isAuthenticated, navigate]);

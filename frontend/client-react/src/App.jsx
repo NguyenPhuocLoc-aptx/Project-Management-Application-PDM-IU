@@ -1,4 +1,3 @@
-// src/App.jsx
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { ToastProvider } from "./context/ToastContext";
@@ -9,6 +8,7 @@ import BoardPage from "./pages/board/BoardPage";
 import MyTasksPage from "./pages/tasks/MyTasksPage";
 import MessagesPage from "./pages/messages/MessagesPage";
 import NotificationsPage from "./pages/notifications/NotificationsPage";
+import AcceptInvitationPage from "./pages/invitation/AcceptInvitationPage";
 
 function ProtectedRoute({ children }) {
     const { isAuthenticated } = useAuth();
@@ -28,6 +28,9 @@ function AppRoutes() {
             <Route path="/auth" element={
                 <PublicRoute><AuthPage /></PublicRoute>
             } />
+
+            {/* Public invitation landing — no auth wrapper, handled internally */}
+            <Route path="/accept-invitation" element={<AcceptInvitationPage />} />
 
             <Route path="/" element={
                 <ProtectedRoute><AppLayout /></ProtectedRoute>

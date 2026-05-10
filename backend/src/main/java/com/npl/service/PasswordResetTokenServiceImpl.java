@@ -7,7 +7,7 @@ import com.npl.model.PasswordResetToken;
 import com.npl.repository.PasswordResetTokenRepository;
 
 @Service
-public class PasswordResetTokenServiceImplementation implements PasswordResetTokenService {
+public class PasswordResetTokenServiceImpl implements PasswordResetTokenService {
 
 	@Autowired
 	private PasswordResetTokenRepository passwordResetTokenRepository;

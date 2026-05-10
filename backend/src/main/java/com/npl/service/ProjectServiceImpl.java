@@ -1,3 +1,4 @@
+// backend/src/main/java/com/npl/service/ProjectServiceImpl.java
 package com.npl.service;
 
 import java.util.List;
@@ -22,7 +23,6 @@ import com.npl.repository.WorkspaceRepository;
 @Service
 public class ProjectServiceImpl implements ProjectService {
 
-	// AFTER
 	private final ProjectRepository projectRepository;
 	private final ChatService chatService;
 	private final UserService userService;
@@ -40,7 +40,6 @@ public class ProjectServiceImpl implements ProjectService {
 		this.workspaceRepository = workspaceRepository;
 	}
 
-	// AFTER
 	@Override
 	public Project createProject(Project project, String userId, String workspaceId)
 			throws UserException, ProjectException {
@@ -64,7 +63,6 @@ public class ProjectServiceImpl implements ProjectService {
 
 		Project savedProject = projectRepository.save(newProject);
 
-		// Add owner as a project member
 		ProjectMember member = ProjectMember.builder()
 				.project(savedProject)
 				.user(user)
@@ -72,7 +70,6 @@ public class ProjectServiceImpl implements ProjectService {
 				.build();
 		projectMemberRepository.save(member);
 
-		// Create a default chat for the project
 		Chat chat = Chat.builder()
 				.project(savedProject)
 				.name(savedProject.getName() + " Chat")
@@ -84,11 +81,8 @@ public class ProjectServiceImpl implements ProjectService {
 
 	@Override
 	public List<Project> getProjectsByTeam(User user, String category, String tag) throws ProjectException {
-		// Rule 3: only return projects the user is explicitly linked to
-		List<Project> projects = projectMemberRepository.findAllByUserId(user.getId())
-				.stream()
-				.map(ProjectMember::getProject)
-				.collect(Collectors.toList());
+		// Single query — owner and workspace are JOIN FETCHed, no N+1
+		List<Project> projects = projectRepository.findAllByMemberUserIdWithDetails(user.getId());
 
 		if (category != null && !category.isBlank()) {
 			projects = projects.stream()
@@ -105,6 +99,7 @@ public class ProjectServiceImpl implements ProjectService {
 				.orElseThrow(() -> new ProjectException("No project found with id " + projectId));
 	}
 
+	@Override
 	public Project getProjectByIdForUser(String projectId, String userId)
 			throws ProjectException, UserException {
 		Project project = getProjectById(projectId);
@@ -130,20 +125,18 @@ public class ProjectServiceImpl implements ProjectService {
 	public Project updateProject(Project updatedProject, String id) throws ProjectException {
 		Project project = getProjectById(id);
 
-		if (updatedProject.getName() != null)        project.setName(updatedProject.getName());
+		if (updatedProject.getName()        != null) project.setName(updatedProject.getName());
 		if (updatedProject.getDescription() != null) project.setDescription(updatedProject.getDescription());
-		if (updatedProject.getCategory() != null)    project.setCategory(updatedProject.getCategory());
-		if (updatedProject.getStatus() != null)      project.setStatus(updatedProject.getStatus());
+		if (updatedProject.getCategory()    != null) project.setCategory(updatedProject.getCategory());
+		if (updatedProject.getStatus()      != null) project.setStatus(updatedProject.getStatus());
 
 		return projectRepository.save(project);
 	}
 
 	@Override
 	public List<Project> searchProjects(String keyword, User user) throws ProjectException {
-		List<Project> userProjects = projectMemberRepository.findAllByUserId(user.getId())
-				.stream()
-				.map(ProjectMember::getProject)
-				.collect(Collectors.toList());
+		// Reuses the optimized fetch query, then filters in memory
+		List<Project> userProjects = projectRepository.findAllByMemberUserIdWithDetails(user.getId());
 
 		if (keyword == null || keyword.isBlank()) return userProjects;
 

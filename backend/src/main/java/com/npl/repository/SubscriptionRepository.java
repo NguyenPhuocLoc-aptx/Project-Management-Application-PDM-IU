@@ -8,8 +8,6 @@ import java.util.Optional;
 
 @Repository
 public interface SubscriptionRepository extends JpaRepository<Subscription, String> {
-
-    // Using the underscore pattern we learned earlier to search inside the User object!
     Optional<Subscription> findByUser_Id(String userId);
 
 }

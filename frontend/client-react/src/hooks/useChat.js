@@ -1,4 +1,3 @@
-// src/hooks/useChat.js
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
@@ -14,7 +13,8 @@ export function useChat(projectId) {
     const [connected, setConnected] = useState(false);
     const [project, setProject] = useState(null);
     const clientRef = useRef(null);
-    
+
+    // ── Load history + project meta ───────────────────────────────────
     useEffect(() => {
         if (!projectId) return;
         setMessages([]);
@@ -31,35 +31,33 @@ export function useChat(projectId) {
             .catch(() => { })
             .finally(() => setLoading(false));
     }, [projectId]);
+
     // ── WebSocket connection ──────────────────────────────────────────
     useEffect(() => {
         if (!projectId || !token) return;
 
         const client = new Client({
-            webSocketFactory: () =>
-                new SockJS(`${WS_URL}/ws`),
-            connectHeaders: {
-                Authorization: `Bearer ${token}`,
-            },
+            webSocketFactory: () => new SockJS(`${WS_URL}/ws`),
+            connectHeaders: { Authorization: `Bearer ${token}` },
             reconnectDelay: 5000,
             onConnect: () => {
                 setConnected(true);
-                // Subscribe to the project's group channel
+                // All messages (including our own) arrive here after the
+                // server persists and broadcasts them — single source of truth
                 client.subscribe(`/group/${projectId}`, (frame) => {
                     try {
                         const msg = JSON.parse(frame.body);
                         setMessages((prev) => {
-                            // Avoid duplicate messages
                             if (prev.some((m) => m.id === msg.id)) return prev;
                             return [...prev, msg];
                         });
                     } catch {
-                        // Malformed frame — ignore
+                        // malformed frame — ignore
                     }
                 });
             },
             onDisconnect: () => setConnected(false),
-            onStompError: () => setConnected(false),
+            onStompError:  () => setConnected(false),
         });
 
         client.activate();
@@ -71,19 +69,11 @@ export function useChat(projectId) {
         };
     }, [projectId, token]);
 
-    // ── Send message via REST (more reliable than STOMP publish) ──────
+    // ── Send via REST — broadcast handled server-side ─────────────────
     const sendMessage = useCallback(async (content) => {
         if (!content.trim()) return;
-        try {
-            const { data } = await messageService.send(projectId, content);
-            // Add our own message to the list if WS doesn't echo it
-            setMessages((prev) => {
-                if (prev.some((m) => m.id === data.id)) return prev;
-                return [...prev, data];
-            });
-        } catch {
-            throw new Error("Failed to send message.");
-        }
+        // No optimistic append here — the message comes back via WebSocket
+        await messageService.send(projectId, content);
     }, [projectId]);
 
     return { messages, loading, connected, project, sendMessage };

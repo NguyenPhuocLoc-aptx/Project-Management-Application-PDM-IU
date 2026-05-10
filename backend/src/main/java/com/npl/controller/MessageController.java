@@ -3,6 +3,7 @@ package com.npl.controller;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import com.npl.exception.ChatException;
@@ -14,30 +15,35 @@ import com.npl.dto.request.CreateMessageRequest;
 import com.npl.service.MessageService;
 import com.npl.service.UserService;
 
-import lombok.RequiredArgsConstructor; // ADDED THIS
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/messages")
 @RequiredArgsConstructor
 public class MessageController {
 
-    // FIXED: Made these 'private final' so @RequiredArgsConstructor can inject them
     private final MessageService messageService;
     private final UserService userService;
+    private final SimpMessagingTemplate messagingTemplate;
 
     @PostMapping("/send")
     public ResponseEntity<Message> sendMessage(
             @RequestBody CreateMessageRequest request,
-            @RequestHeader("Authorization") String jwt) throws UserException, ChatException, ProjectException {
+            @RequestHeader("Authorization") String jwt)
+            throws UserException, ChatException, ProjectException {
 
         User user = userService.findUserProfileByJwt(jwt);
 
         String projectId = request.getProjectId() != null
                 ? request.getProjectId()
                 : request.getChatId();
-        Message sentMessage = messageService.sendMessage(
-                user.getId(), projectId, request.getContent());
-        return ResponseEntity.ok(sentMessage);
+
+        Message saved = messageService.sendMessage(user.getId(), projectId, request.getContent());
+
+        // Broadcast the persisted message to all WebSocket subscribers
+        messagingTemplate.convertAndSend("/group/" + projectId, saved);
+
+        return ResponseEntity.ok(saved);
     }
 
     @GetMapping("/chat/{projectId}")
